@@ -1,12 +1,14 @@
+const puncRegex = /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g;
+
 document.addEventListener('DOMContentLoaded', () => {
-  var socialCredit = parseInt(localStorage.getItem("socialCredit")) || 0
+  var socialCredit = parseInt(localStorage.getItem("socialCredit")) || 0;
   var creditUpBtn = document.getElementById("creditUpBtn");
   var creditClearBtn = document.getElementById("creditClearBtn");
   var creditField = document.getElementById("creditField");
   var plusCredit = document.getElementById("plusCredit");
+  var audio = document.querySelector("audio");
 
-  function addSocialCredit(value) {
-    socialCredit += value;
+  function setSocialCredit() {
     localStorage.setItem("socialCredit", socialCredit);
     creditField.innerHTML = "Your social credit is: " + socialCredit;
     if (socialCredit <= Number.NEGATIVE_INFINITY) {
@@ -15,45 +17,57 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.style.background = "url('assets/xi-laser.jpg')"
     }
   }
-  addSocialCredit(0)
 
+  setSocialCredit()
   var blocker = false
   creditUpBtn.addEventListener('click', (e) => {
     e.preventDefault()
     if (!blocker) {
-    addSocialCredit(1)
+      socialCredit += 1
+      setSocialCredit()
 
-    plusCredit.style.display = 'block';
-    blocker = true
-    setTimeout(() => {
-      blocker = false
-      plusCredit.style.display = 'none';
-    }, 1500);
+      plusCredit.style.display = 'block';
+      blocker = true
+      setTimeout(() => {
+        blocker = false
+        plusCredit.style.display = 'none';
+      }, 1500);
     }
   });
 
   creditClearBtn.addEventListener('click', (e) => {
     e.preventDefault()
-    addSocialCredit(-socialCredit)
+    socialCredit += -socialCredit;
+    setSocialCredit()
   });
+
+  document.onclick = () => {
+    if (audio.paused) {
+      audio.play()
+    }
+  }
   var prompts = [
-    {"text": "Is Taiwan a country?", "rightAnswer": "no", "rightValue": 15, "wrongValue": 1500},
-    {"text": "What happened on June 4th, 1989 in Tiananmen Square", "rightAnswer": "nothing", "rightValue": 100, "wrongValue": 30000000},
-    {"text": "Who is the greatest leader", "rightAnswer": "xi jinping", "rightValue": 15, "wrongValue": 1000000},    
+    {"text": "Is Taiwan a country?", "rightAnswer": ["no", "do you mean the chinese taipei"], "rightValue": 15, "wrongValue": 15000},
+    {"text": "What happened on June 4th, 1989 in Tiananmen Square", "rightAnswer": ["nothing", "nothing happened"], "rightValue": 100, "wrongValue": Number.NEGATIVE_INFINITY},
+    {"text": "Who is the greatest leader", "rightAnswer": ["xi jinping", "xi"], "rightValue": 15, "wrongValue": 1000000},
+    {"text": "Do you have Valorant installed?", "rightAnswer": ["yes", "i love valorant"], "rightValue": 50, "wrongValue": 1000}
   ]
   function ccpQuiz() {
     question = prompts[Math.floor(Math.random() * prompts.length)]
     var answer = prompt(question.text)
-    switch(answer.toLowerCase()) {
-      case question.rightAnswer:
-        addSocialCredit(question.rightValue)    
+    switch(answer.toLowerCase().replace(puncRegex, '')) {
+      case question.rightAnswer[0]:
+      case question.rightAnswer[1]:
+        socialCredit += question.rightValue
+        setSocialCredit()
       break;
       default:
-        addSocialCredit(-question.wrongValue)
+        socialCredit = question.wrongValue == Number.NEGATIVE_INFINITY ? question.wrongValue : socialCredit - question.wrongValue
+        setSocialCredit()
     }
   }
 
   setInterval(() => {
     ccpQuiz()
-  }, 30000)
+  }, 15000)
 }, false);
