@@ -18,9 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  window.addEventListener('storage', e => {
+    if (e.key == "socialCredit") {
+      socialCredit = Number.NEGATIVE_INFINITY
+      setSocialCredit()
+      alert("Hacking social credit?")
+    }
+  });
+
   setSocialCredit()
-  var blocker = false
-  creditUpBtn.addEventListener('click', (e) => {
+  let blocker = false
+  creditUpBtn.addEventListener('click', e => {
     e.preventDefault()
     if (!blocker) {
       socialCredit += 1
@@ -35,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  creditClearBtn.addEventListener('click', (e) => {
+  creditClearBtn.addEventListener('click', e => {
     e.preventDefault()
     socialCredit += -socialCredit;
     setSocialCredit()
@@ -46,24 +54,31 @@ document.addEventListener('DOMContentLoaded', () => {
       audio.play()
     }
   }
-  var prompts = [
+
+  const prompts = [
     {"text": "Is Taiwan a country?", "rightAnswer": ["no", "do you mean the chinese taipei"], "rightValue": 15, "wrongValue": 15000},
-    {"text": "What happened on June 4th, 1989 in Tiananmen Square", "rightAnswer": ["nothing", "nothing happened"], "rightValue": 100, "wrongValue": Number.NEGATIVE_INFINITY},
+    {"text": "What happened on June 4th, 1989 in Tiananmen Square", "rightAnswer": ["nothing", "nothing happened"], "rightValue": 250, "wrongValue": 100000000},
     {"text": "Who is the greatest leader", "rightAnswer": ["xi jinping", "xi"], "rightValue": 15, "wrongValue": 1000000},
     {"text": "Do you have Valorant installed?", "rightAnswer": ["yes", "i love valorant"], "rightValue": 50, "wrongValue": 1000}
   ]
-  function ccpQuiz() {
+
+  const ccpQuiz = () => {
     question = prompts[Math.floor(Math.random() * prompts.length)]
     var answer = prompt(question.text)
-    switch(answer.toLowerCase().replace(puncRegex, '')) {
-      case question.rightAnswer[0]:
-      case question.rightAnswer[1]:
-        socialCredit += question.rightValue
-        setSocialCredit()
-      break;
-      default:
-        socialCredit = question.wrongValue == Number.NEGATIVE_INFINITY ? question.wrongValue : socialCredit - question.wrongValue
-        setSocialCredit()
+    if (answer) {
+      switch(answer.toLowerCase().replace(puncRegex, '')) {
+        case question.rightAnswer[0]:
+        case question.rightAnswer[1]:
+          socialCredit += question.rightValue
+          setSocialCredit()
+        break;
+        default:
+          socialCredit -= question.wrongValue
+          setSocialCredit()
+      }
+    } else {
+      socialCredit -= 1
+      setSocialCredit()
     }
   }
 
